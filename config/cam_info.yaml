@@ -1,0 +1,26 @@
+image_width: 1280
+image_height: 800
+camera_name: bf_cam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [975.79067,   0.     , 604.50264,
+           0.     , 979.54317, 338.12153,
+           0.     ,   0.     ,   1.     ]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.006113, 0.043455, -0.006243, 0.001875, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [988.50885,   0.     , 607.54685,   0.     ,
+           0.     , 992.01367, 333.02591,   0.     ,
+           0.     ,   0.     ,   1.     ,   0.     ]
