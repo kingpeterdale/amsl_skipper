@@ -15,11 +15,11 @@ class SikInterface(Node):
     # ROS2 Node configure
     super().__init__('sik_interface')
     self.subscription = self.create_subscription(LaserScan,'scan',self.laser_cb, 10)
-    self.timer = self.create_timer(0.5,self.timer_cb)
+    self.timer = self.create_timer(0.3,self.timer_cb)
  
     # SIK Radio Interface
     try:
-      self.sik_port = serial.Serial('/dev/serial/by-id/usb-FTDI_FT231X_USB_UART_D30GL9AC-if00-port0',57600,timeout=10)
+      self.sik_port = serial.Serial('/dev/serial/by-id/usb-FTDI_FT231X_USB_UART_D30GL9AC-if00-port0',115200,timeout=10)
       self.get_logger().info('Serial Port opened for SIK Radio')
       self.sik_read_thread = Thread(target=self.sik_read,daemon=True)
       self.sik_read_thread.start()
@@ -48,12 +48,17 @@ class SikInterface(Node):
           converts range to UNIN8 with 10cm resolution
     '''
     angles = np.degrees(np.linspace(msg.angle_min, msg.angle_max, len(msg.ranges)))
-    angles = np.mod((angles + 180),360) - 180
-    i = np.sort(np.where((angles>120)|(angles<-120)))
-    #print(angles[:5])
+    #angles = np.mod((angles + 180),360) - 180
+    #i = np.sort(np.where((angles>120)|(angles<-120)))
+    #print(angles[0],angles[-1],len(angles))
     ranges = np.array(msg.ranges)#[i]
     self.laser_scan = np.where((ranges<17)&(ranges>1), ranges*10, 0).astype(np.uint8)
     self.laser_dt = datetime.now()
+    return
+    try:
+      nw = self.sik_port.write(f'{self.laser_dt:%H:%M:%S.%f}'.encode() + self.laser_scan.tobytes() + b'\xFF')
+    except:
+      pass
     #print(self.laser_scan)
     
     #self.laser_scan = np.array([int(r*10) if (r<17 and r>1) else 0 for r in np.array(msg.ranges)[i]],dtype=np.uint8)
@@ -77,9 +82,13 @@ class SikInterface(Node):
         msg = self.sik_port.readline()
         if len(msg) > 0:
           print(msg)
+          try:
+            self.llc_port.write(msg)
+          except:
+            print('could not write to LLC')
+
 
   def llc_read(self):
-    return
     self.get_logger().info('LLC Read Thread Started')
     while True:
       msg = self.llc_port.readline()
